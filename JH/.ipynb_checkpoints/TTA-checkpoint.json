@@ -1,0 +1,5 @@
+{
+"augs":["NO", "FLIP_LR", "GAUSSIAN"],
+"mean":"ARITH",
+"bits":8
+} 
