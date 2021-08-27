@@ -1,0 +1,26 @@
+{
+    "os": "Linux-4.4.0-59-generic-x86_64-with-glibc2.10",
+    "python": "3.8.5",
+    "heartbeatAt": "2021-08-26T16:31:07.400998",
+    "startedAt": "2021-08-26T16:31:06.237714",
+    "docker": null,
+    "gpu": "Tesla V100-PCIE-32GB",
+    "gpu_count": 1,
+    "cpu_count": 8,
+    "cuda": null,
+    "args": [
+        "-f",
+        "/opt/ml/.local/share/jupyter/runtime/kernel-8ab4174e-8b37-48ca-b260-320fcefd7f82.json"
+    ],
+    "state": "running",
+    "program": "git/JH/ByeBye/3way_augmentation_Val.ipynb",
+    "root": "/opt/ml/git",
+    "git": {
+        "remote": "https://github.com/boostcampaitech2/image-classification-level1-28",
+        "commit": "97f30ca897d7312e3db13af10a713fae49f12e11"
+    },
+    "email": "youkind98@gmail.com",
+    "host": "d131228489fe",
+    "username": "root",
+    "executable": "/opt/conda/bin/python"
+}
