@@ -1,6 +1,27 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from efficientnet_pytorch import EfficientNet
+
+
+class EfficientNetB6(nn.Module):
+    def __init__(self, num_classes):
+        super().__init__()
+        self.backbone = EfficientNet.from_pretrained(
+            "efficientnet-b6", num_classes)
+
+    def forward(self, x):
+        return self.backbone(x)
+
+
+class EfficientNetB7(nn.Module):
+    def __init__(self, num_classes):
+        super().__init__()
+        self.backbone = EfficientNet.from_pretrained(
+            "efficientnet-b7", num_classes)
+
+    def forward(self, x):
+        return self.backbone(x)
 
 
 class BaseModel(nn.Module):
