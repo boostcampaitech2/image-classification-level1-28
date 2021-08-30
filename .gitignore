@@ -1,1 +1,3 @@
 baseline/model/*
+**/wandb/
+**/__pycache__/
