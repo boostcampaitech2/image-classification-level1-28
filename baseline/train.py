@@ -195,13 +195,13 @@ def train(data_dir, model_dir, args):
                     f"Epoch[{epoch}/{args.epochs}]({idx + 1}/{len(train_loader)}) || "
                     f"training loss {train_loss:4.4} || training accuracy {train_acc:4.2%} || lr {current_lr}"
                 )
-                logger.add_scalar("Train/loss", train_loss,
+                logger.add_scalar("Train loss", train_loss,
                                   epoch * len(train_loader) + idx)
-                logger.add_scalar("Train/accuracy", train_acc,
+                logger.add_scalar("Train Acc", train_acc,
                                   epoch * len(train_loader) + idx)
-                wandb.log({"Train/loss": train_loss,
-                          "Train/accuracy": train_acc,
-                           "Learning_rate": current_lr})
+                wandb.log({"Train loss": train_loss,
+                          "Train Acc": train_acc,
+                           "Learning Rate": current_lr})
 
                 loss_value = 0
                 matches = 0
@@ -214,9 +214,12 @@ def train(data_dir, model_dir, args):
             model.eval()
             val_loss_items = []
             val_acc_items = []
+            example_images = []
             figure = None
-            for val_batch in val_loader:
+            for idx, val_batch in enumerate(val_loader):
                 inputs, labels = val_batch
+                if (idx % 500) == 0:
+                    example_images.append(inputs)
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
@@ -259,7 +262,10 @@ def train(data_dir, model_dir, args):
             logger.add_figure("results", figure, epoch)
             logger.add_scalar("F1-score", f1_score_value, epoch)
             wandb.log(
-                {"Val/loss": val_loss, "Val/accuracy": train_acc, "F1_score": f1_score_value})
+                {"Validation Loss": val_loss,
+                 "Validation Acc": val_acc,
+                 "Validation F1": f1_score_value,
+                 "example_images": [wandb.Image(image) for image in example_images]})
             print()
 
 
