@@ -11,6 +11,10 @@ from torch.utils.data import Dataset, Subset, random_split
 from torchvision import transforms
 from torchvision.transforms import *
 
+import albumentations
+import albumentations.pytorch
+from facecrop import faceCrop
+
 IMG_EXTENSIONS = [
     ".jpg", ".JPG", ".jpeg", ".JPEG", ".png",
     ".PNG", ".ppm", ".PPM", ".bmp", ".BMP",
@@ -48,6 +52,28 @@ class AddGaussianNoise(object):
 
     def __repr__(self):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
+
+class AlbuAugmentation:
+    def __init__(self, resize, mean, std, **args):
+        self.resize = resize
+        self.train_transform = albumentations.Compose(
+            [
+                albumentations.Resize(resize[0],resize[1]),
+                albumentations.OneOf([albumentations.ShiftScaleRotate(rotate_limit=15, p=0.5),
+                                        albumentations.MotionBlur(p=0.5),
+                                        albumentations.OpticalDistortion(p=0.5),
+                                        albumentations.GaussNoise(p=0.5)], p=1),
+                albumentations.Normalize(mean=mean, std=std),
+                albumentations.pytorch.transforms.ToTensorV2(),
+                #       이미지 원본 사이즈는 384, 512   
+            ]
+        )
+    def __call__(self, image):
+        image = np.array(image)
+        faceCrop(image)
+        return self.train_transform(image = image)['image']
+
 
 
 class CustomAugmentation:

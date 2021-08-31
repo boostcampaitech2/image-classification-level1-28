@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.models as models
 from efficientnet_pytorch import EfficientNet
 
 
@@ -22,6 +23,28 @@ class EfficientNetB7(nn.Module):
 
     def forward(self, x):
         return self.backbone(x)
+
+
+class imgInceptionV3(nn.Module): #input size : (299,299)
+    def __init__(self, num_classes):
+        super(imgInceptionV3, self).__init__()
+        self.model = models.inception_v3(pretrained=True, aux_logits = False)
+        # self.inception_v3.fc = nn.Linear(2048, num_classes)
+        self.num_classes=num_classes
+    def forward(self, x):
+        x = self.model(x)
+        return x
+            
+        
+class denseNet(nn.Module): #input size : (224,224)
+    def __init__(self, num_classes):
+        super(denseNet, self).__init__()
+        self.model = models.densenet161(pretrained=True)
+        # self.densenet.classifier = nn.Linear(2208, 18)
+        self.num_classes=num_classes
+    def forward(self, x):
+        x = self.model(x)
+        return x
 
 
 class BaseModel(nn.Module):

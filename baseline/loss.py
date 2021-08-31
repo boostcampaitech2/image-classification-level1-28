@@ -65,6 +65,32 @@ class F1Loss(nn.Module):
         return 1 - f1.mean()
 
 
+class FocalLoss_gamma4(nn.Module):
+    def __init__(self, weight=None,
+                 gamma=4., reduction='mean'):
+        nn.Module.__init__(self)
+        self.weight = weight
+        self.gamma = gamma
+        self.reduction = reduction
+
+    def forward(self, input_tensor, target_tensor):
+        log_prob = F.log_softmax(input_tensor, dim=-1)
+        prob = torch.exp(log_prob)
+        return F.nll_loss(
+            ((1 - prob) ** self.gamma) * log_prob*2,
+            target_tensor,
+            weight=self.weight,
+            reduction=self.reduction
+        )
+
+_criterion_entrypoints = {
+    'cross_entropy': nn.CrossEntropyLoss,
+    'focal': FocalLoss,
+    'label_smoothing': LabelSmoothingLoss,
+    'f1': F1Loss,
+    'Focal_g4' : FocalLoss_gamma4
+}
+
 _criterion_entrypoints = {
     'cross_entropy': nn.CrossEntropyLoss,
     'focal': FocalLoss,
