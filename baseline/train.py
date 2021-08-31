@@ -195,7 +195,7 @@ def train(data_dir, model_dir, args):
                     f"Epoch[{epoch}/{args.epochs}]({idx + 1}/{len(train_loader)}) || "
                     f"training loss {train_loss:4.4} || training accuracy {train_acc:4.2%} || lr {current_lr}"
                 )
-                logger.add_scalar("Train loss", train_loss,
+                logger.add_scalar("Train Loss", train_loss,
                                   epoch * len(train_loader) + idx)
                 logger.add_scalar("Train Acc", train_acc,
                                   epoch * len(train_loader) + idx)

@@ -59,21 +59,21 @@ class AlbuAugmentation:
         self.resize = resize
         self.train_transform = albumentations.Compose(
             [
-                albumentations.Resize(resize[0],resize[1]),
+                albumentations.Resize(resize[0], resize[1]),
                 albumentations.OneOf([albumentations.ShiftScaleRotate(rotate_limit=15, p=0.5),
-                                        albumentations.MotionBlur(p=0.5),
-                                        albumentations.OpticalDistortion(p=0.5),
-                                        albumentations.GaussNoise(p=0.5)], p=1),
+                                      albumentations.MotionBlur(p=0.5),
+                                      albumentations.OpticalDistortion(p=0.5),
+                                      albumentations.GaussNoise(p=0.5)], p=1),
                 albumentations.Normalize(mean=mean, std=std),
                 albumentations.pytorch.transforms.ToTensorV2(),
-                #       이미지 원본 사이즈는 384, 512   
+                #       이미지 원본 사이즈는 384, 512
             ]
         )
+
     def __call__(self, image):
         image = np.array(image)
-        faceCrop(image)
-        return self.train_transform(image = image)['image']
-
+        image = faceCrop(image)
+        return self.train_transform(image=image)['image']
 
 
 class CustomAugmentation:
@@ -109,7 +109,8 @@ class GenderLabels(int, Enum):
         elif value == "female":
             return cls.FEMALE
         else:
-            raise ValueError(f"Gender value should be either 'male' or 'female', {value}")
+            raise ValueError(
+                f"Gender value should be either 'male' or 'female', {value}")
 
 
 class AgeLabels(int, Enum):
@@ -172,7 +173,8 @@ class MaskBaseDataset(Dataset):
                 if _file_name not in self._file_names:  # "." 로 시작하는 파일 및 invalid 한 파일들은 무시합니다
                     continue
 
-                img_path = os.path.join(self.data_dir, profile, file_name)  # (resized_data, 000004_male_Asian_54, mask1.jpg)
+                # (resized_data, 000004_male_Asian_54, mask1.jpg)
+                img_path = os.path.join(self.data_dir, profile, file_name)
                 mask_label = self._file_names[_file_name]
 
                 id, gender, race, age = profile.split("_")
@@ -187,7 +189,8 @@ class MaskBaseDataset(Dataset):
     def calc_statistics(self):
         has_statistics = self.mean is not None and self.std is not None
         if not has_statistics:
-            print("[Warning] Calculating statistics... It can take a long time depending on your CPU machine")
+            print(
+                "[Warning] Calculating statistics... It can take a long time depending on your CPU machine")
             sums = []
             squared = []
             for image_path in self.image_paths[:3000]:
@@ -208,7 +211,8 @@ class MaskBaseDataset(Dataset):
         mask_label = self.get_mask_label(index)
         gender_label = self.get_gender_label(index)
         age_label = self.get_age_label(index)
-        multi_class_label = self.encode_multi_class(mask_label, gender_label, age_label)
+        multi_class_label = self.encode_multi_class(
+            mask_label, gender_label, age_label)
 
         image_transform = self.transform(image)
         return image_transform, multi_class_label
@@ -288,7 +292,8 @@ class MaskSplitByProfileDataset(MaskBaseDataset):
 
     def setup(self):
         profiles = os.listdir(self.data_dir)
-        profiles = [profile for profile in profiles if not profile.startswith(".")]
+        profiles = [
+            profile for profile in profiles if not profile.startswith(".")]
         split_profiles = self._split_profile(profiles, self.val_ratio)
 
         cnt = 0
@@ -301,7 +306,8 @@ class MaskSplitByProfileDataset(MaskBaseDataset):
                     if _file_name not in self._file_names:  # "." 로 시작하는 파일 및 invalid 한 파일들은 무시합니다
                         continue
 
-                    img_path = os.path.join(self.data_dir, profile, file_name)  # (resized_data, 000004_male_Asian_54, mask1.jpg)
+                    # (resized_data, 000004_male_Asian_54, mask1.jpg)
+                    img_path = os.path.join(self.data_dir, profile, file_name)
                     mask_label = self._file_names[_file_name]
 
                     id, gender, race, age = profile.split("_")
