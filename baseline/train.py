@@ -98,6 +98,8 @@ def train(data_dir, model_dir, args):
     # -- settings
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
+    patience = args.patience
+    counter = 0
 
     # -- dataset
     # default: BaseAugmentation
@@ -243,12 +245,19 @@ def train(data_dir, model_dir, args):
             val_loss = np.sum(val_loss_items) / len(val_loader)
             val_acc = np.sum(val_acc_items) / len(val_set)
             best_val_loss = min(best_val_loss, val_loss)
+
             if val_acc > best_val_acc:
                 print(
                     f"New best model for val accuracy : {val_acc:4.2%}! saving the best model..")
                 torch.save(model.module.state_dict(), f"{save_dir}/best.pth")
                 best_val_acc = val_acc
+                counter = 0
+            else:
+                counter += 1
             torch.save(model.module.state_dict(), f"{save_dir}/last.pth")
+            if counter > patience:
+                print("Early Stopping...")
+                break
             print(
                 f"[Val] acc : {val_acc:4.2%}, loss: {val_loss:4.2} || "
                 f"best acc : {best_val_acc:4.2%}, best loss: {best_val_loss:4.2}"
@@ -311,6 +320,8 @@ if __name__ == '__main__':
                         help='how many batches to wait before logging training status')
     parser.add_argument('--name', default='exp',
                         help='model save at {SM_MODEL_DIR}/{name}')
+    parser.add_argument('--patience', type=int, default=5,
+                        help='early stopping boundary')
 
     # Container environment
     parser.add_argument('--data_dir', type=str, default=os.environ.get(
