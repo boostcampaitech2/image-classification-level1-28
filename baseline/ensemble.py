@@ -14,20 +14,20 @@ def load_data_list(data_dir: str) -> list:
     return csv_list
 
 
-def load_csv_file(file_loc: str) -> pd.DataFrame:
-    """
-    csv file을 읽어와 dataframe으로 반환합니다.
-    """
-    df = pd.read_csv(file_loc)
+# def load_csv_file(file_loc: str) -> pd.DataFrame:
+#     """
+#     csv file을 읽어와 dataframe으로 반환합니다.
+#     """
+#     df = pd.read_csv(file_loc)
 
-    return df
+#     return df
 
 
-def detach_image_id(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    ImageID column을 제거한 DataFrame을 반환합니다.
-    """
-    return df.drop(columns=["ImageID"])
+# def detach_image_id(df: pd.DataFrame) -> pd.DataFrame:
+#     """
+#     ImageID column을 제거한 DataFrame을 반환합니다.
+#     """
+#     return df.drop(columns=["ImageID"])
 
 
 def sum_and_get_argmax(df_list: list) -> pd.DataFrame:
@@ -61,11 +61,16 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     data_dirs = args.data_dir
-
     data_list = load_data_list(data_dirs)
-    df_list = [load_csv_file(file_name) for file_name in data_list]
-    image_id = df_list[0]["ImageID"]
-    df_list = [detach_image_id(df) for df in df_list]
-    result = get_submission_df(sum_and_get_argmax(df_list), image_id)
 
+    # csv file을 읽어와 dataframe으로 반환합니다.
+    df_list = [pd.read_csv(file_name) for file_name in data_list]
+
+    # ImageID Series를 따로 변수에 저장합니다.
+    image_id = df_list[0]["ImageID"]
+
+    # ImageID column을 제거한 DataFrame을 반환합니다.
+    df_list = [df.drop(columns=["ImageID"]) for df in df_list]
+
+    result = get_submission_df(sum_and_get_argmax(df_list), image_id)
     result.to_csv("submission.csv", index=False)
