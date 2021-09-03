@@ -56,13 +56,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--data_dir', type=str, default="/",
-                        help='input batch size for validing (default: 1000)')
+    # ensemble.py --data_dir "ouput csv파일들이 들어있는 폴더 경로"
+    parser.add_argument('--data_dir', type=str, default="/outputs")
 
     args = parser.parse_args()
     data_dirs = args.data_dir
 
-    # file_dirs = "../../test"
     data_list = load_data_list(data_dirs)
     df_list = [load_csv_file(file_name) for file_name in data_list]
     image_id = df_list[0]["ImageID"]
