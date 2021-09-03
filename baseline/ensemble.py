@@ -14,22 +14,6 @@ def load_data_list(data_dir: str) -> list:
     return csv_list
 
 
-# def load_csv_file(file_loc: str) -> pd.DataFrame:
-#     """
-#     csv file을 읽어와 dataframe으로 반환합니다.
-#     """
-#     df = pd.read_csv(file_loc)
-
-#     return df
-
-
-# def detach_image_id(df: pd.DataFrame) -> pd.DataFrame:
-#     """
-#     ImageID column을 제거한 DataFrame을 반환합니다.
-#     """
-#     return df.drop(columns=["ImageID"])
-
-
 def sum_and_get_argmax(df_list: list) -> pd.DataFrame:
     """
     DataFrame들을 모두 합하고 argmax한 값들을 ans column으로 추가합니다.
