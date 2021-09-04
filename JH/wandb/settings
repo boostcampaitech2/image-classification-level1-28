@@ -1,5 +1,0 @@
-[default]
-entity = youkind
-project = MaskClassification
-base_url = https://api.wandb.ai
-
