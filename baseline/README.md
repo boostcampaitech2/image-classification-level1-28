@@ -11,7 +11,7 @@
 ### Training
 - `SM_CHANNEL_TRAIN=[train image dir] SM_MODEL_DIR=[model saving dir] python train.py`
 - `python train.py`로 실행 시 학습 데이터 디렉토리 위치는 `/opt/ml/input/data/train/images`, 모델이 저장될 디렉토리 위치는 `./model` 입니다.
-- 학습 시, option을 argument로 지정할 수 있습니다. ex) `python train.py --ephochs 10 --optimizer Adam`
+- 학습 시, option을 argument로 지정할 수 있습니다. ex) `python train.py --epochs 10 --optimizer Adam`
 - `train.py`에서 `wandb.init()`의 `name`을 변경 후 실행해주세요.
 
 ### Inference
