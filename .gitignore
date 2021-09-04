@@ -1,8 +1,6 @@
 minibatch28/model/*
 minibatch28/data/train_list.csv
 minibatch28/data/valid_list.csv
-minibatch28/data/image/train/*
-minibatch28/data/image/eval/*
 minibatch28/output/*.csv
 
 **/wandb/
