@@ -1,5 +1,10 @@
 baseline/model/*
-baseline/output/*
+baseline/data/train_list.csv
+baseline/data/valid_list.csv
+baseline/data/image/train/*
+baseline/data/image/eval/*
+baseline/output/*.csv
+
 **/wandb/
 **/__pycache__/
 **/.ipynb_checkpoints/

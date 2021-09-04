@@ -32,23 +32,6 @@ class FocalLoss(nn.Module):
         )
 
 
-class LabelSmoothingLoss(nn.Module):
-    def __init__(self, classes=3, smoothing=0.0, dim=-1):
-        super(LabelSmoothingLoss, self).__init__()
-        self.confidence = 1.0 - smoothing
-        self.smoothing = smoothing
-        self.cls = classes
-        self.dim = dim
-
-    def forward(self, pred, target):
-        pred = pred.log_softmax(dim=self.dim)
-        with torch.no_grad():
-            true_dist = torch.zeros_like(pred)
-            true_dist.fill_(self.smoothing / (self.cls - 1))
-            true_dist.scatter_(1, target.data.unsqueeze(1), self.confidence)
-        return torch.mean(torch.sum(-true_dist * pred, dim=self.dim))
-
-
 # https://gist.github.com/SuperShinyEyes/dcc68a08ff8b615442e3bc6a9b55a354
 class F1Loss(nn.Module):
     def __init__(self, classes=18, epsilon=1e-7):
@@ -75,38 +58,13 @@ class F1Loss(nn.Module):
         return 1 - f1.mean()
 
 
-class FocalLoss_gamma4(nn.Module):
-    def __init__(self, weight=None,
-                 gamma=4., reduction='mean'):
-        nn.Module.__init__(self)
-        self.weight = weight
-        self.gamma = gamma
-        self.reduction = reduction
-
-    def forward(self, input_tensor, target_tensor):
-        log_prob = F.log_softmax(input_tensor, dim=-1)
-        prob = torch.exp(log_prob)
-        return F.nll_loss(
-            ((1 - prob) ** self.gamma) * log_prob*2,
-            target_tensor,
-            weight=self.weight,
-            reduction=self.reduction
-        )
-
-
 def WeightedCrossEntropyLoss():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     weight = get_class_weight().to(device, dtype=torch.float)
-    print(weight)
     return nn.CrossEntropyLoss(weight=weight)
 
 
 _criterion_entrypoints = {
-    'cross_entropy': nn.CrossEntropyLoss,
-    'focal': FocalLoss,
-    'label_smoothing': LabelSmoothingLoss,
-    'f1': F1Loss,
-    'Focal_g4': FocalLoss_gamma4,
     'model1': FocalLoss,
     'model2': WeightedCrossEntropyLoss,
     'model3': F1Loss,

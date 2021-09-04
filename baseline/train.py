@@ -7,15 +7,14 @@ import random
 import re
 from importlib import import_module
 from pathlib import Path
-from dataset import make_dataframe
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
+
 import pandas as pd
-from dataset import MaskBaseDataset, create_dataset, get_transforms
+from dataset import MaskBaseDataset, create_dataset, get_transforms, make_dataframe
 from loss import create_criterion
 from model import create_model
 from sklearn.metrics import f1_score
@@ -58,40 +57,6 @@ def rand_bbox(size, lam):
     return bbx1, bby1, bbx2, bby2
 
 
-def grid_image(np_images, gts, preds, n=16, shuffle=False):
-    batch_size = np_images.shape[0]
-    assert n <= batch_size
-
-    choices = random.choices(
-        range(batch_size), k=n) if shuffle else list(range(n))
-    # cautions: hardcoded, 이미지 크기에 따라 figsize 를 조정해야 할 수 있습니다. T.T
-    figure = plt.figure(figsize=(12, 18 + 2))
-    # cautions: hardcoded, 이미지 크기에 따라 top 를 조정해야 할 수 있습니다. T.T
-    plt.subplots_adjust(top=0.8)
-    n_grid = np.ceil(n ** 0.5)
-    tasks = ["mask", "gender", "age"]
-    for idx, choice in enumerate(choices):
-        gt = gts[choice].item()
-        pred = preds[choice].item()
-        image = np_images[choice]
-        # title = f"gt: {gt}, pred: {pred}"
-        gt_decoded_labels = MaskBaseDataset.decode_multi_class(gt)
-        pred_decoded_labels = MaskBaseDataset.decode_multi_class(pred)
-        title = "\n".join([
-            f"{task} - gt: {gt_label}, pred: {pred_label}"
-            for gt_label, pred_label, task
-            in zip(gt_decoded_labels, pred_decoded_labels, tasks)
-        ])
-
-        plt.subplot(n_grid, n_grid, idx + 1, title=title)
-        plt.xticks([])
-        plt.yticks([])
-        plt.grid(False)
-        plt.imshow(image, cmap=plt.cm.binary)
-
-    return figure
-
-
 def increment_path(path, exist_ok=False):
     """ Automatically increment path, i.e. runs/exp --> runs/exp0, runs/exp1 etc.
 
@@ -124,11 +89,10 @@ def train(data_dir, model_dir, args):
     counter = 0
 
     # -- dataset
-    # default: BaseAugmentation
     df_train = pd.read_csv(os.path.join(
-        args.train_data_dir, 'train_list.csv')).iloc[:30, :]
+        args.train_data_dir, 'train_list.csv'))
     df_val = pd.read_csv(os.path.join(
-        args.train_data_dir, 'valid_list.csv')).iloc[:30, :]
+        args.train_data_dir, 'valid_list.csv'))
     if args.dataset == 'model4':
         dataset = MaskBaseDataset(data_dir)
         train_set, val_set = dataset.split_dataset()
@@ -148,20 +112,6 @@ def train(data_dir, model_dir, args):
             transform=get_transforms(args.model)['val']
         )
     print('dataset created')
-    # num_classes = dataset.num_classes  # 18
-
-    # -- augmentation
-    # transform_module = getattr(import_module(
-    #    "dataset"), args.augmentation)  # default: BaseAugmentation
-    # transform = transform_module(
-    #    resize=args.resize,
-    #    mean=dataset.mean,
-    #    std=dataset.std,
-    # )
-    # dataset.set_transform(transform)
-
-    # -- data_loader
-    #train_set, val_set = dataset.split_dataset()
 
     train_loader = DataLoader(
         train_set,
@@ -265,7 +215,6 @@ def train(data_dir, model_dir, args):
             val_loss_items = []
             val_acc_items = []
             example_images = []
-            figure = None
 
             for idx, val_batch in enumerate(val_loader):
                 inputs, labels = val_batch
@@ -277,7 +226,7 @@ def train(data_dir, model_dir, args):
                 outs = model(inputs)
                 preds = torch.argmax(outs, dim=-1)
 
-                loss_item = criterion(outs, labels).item()
+                loss_item = criterion(outs, labels).detach().item()
                 acc_item = (labels == preds).sum().item()
                 val_loss_items.append(loss_item)
                 val_acc_items.append(acc_item)
@@ -317,7 +266,7 @@ def train(data_dir, model_dir, args):
 if __name__ == '__main__':
     # wandb.login()
     wandb.init(entity="minibatch28",
-               project="MaskClassification", name="DG_efficientb7_test")
+               project="MaskClassification", name="minibatch28_final")
 
     parser = argparse.ArgumentParser()
 
@@ -330,16 +279,10 @@ if __name__ == '__main__':
                         help='random seed (default: 42)')
     parser.add_argument('--epochs', type=int, default=20,
                         help='number of epochs to train (default: 1)')
-    parser.add_argument('--dataset', type=str, default='MaskSplitByProfileDataset',
-                        help='dataset augmentation type (default: MaskSplitByProfileDataset)')
-    parser.add_argument('--augmentation', type=str, default='BaseAugmentation',
-                        help='data augmentation type (default: BaseAugmentation)')
-    parser.add_argument("--resize", nargs="+", type=list,
-                        default=[128, 96], help='resize size for image when training')
+    parser.add_argument('--dataset', type=str,
+                        help='dataset augmentation type')
     parser.add_argument('--batch_size', type=int, default=64,
                         help='input batch size for training (default: 64)')
-    parser.add_argument('--valid_batch_size', type=int, default=10,
-                        help='input batch size for validing (default: 10)')
     parser.add_argument('--model', type=str, default='BaseModel',
                         help='model type (default: BaseModel)')
     parser.add_argument('--optimizer', type=str, default='SGD',
@@ -348,8 +291,6 @@ if __name__ == '__main__':
                         help='scheduler On/Off (default: 1)')
     parser.add_argument('--lr', type=float, default=1e-3,
                         help='learning rate (default: 1e-3)')
-    parser.add_argument('--val_ratio', type=float, default=0.2,
-                        help='ratio for validaton (default: 0.2)')
     parser.add_argument('--criterion', type=str, default='cross_entropy',
                         help='criterion type (default: cross_entropy)')
     parser.add_argument('--lr_decay_step', type=int, default=20,
@@ -369,9 +310,9 @@ if __name__ == '__main__':
 
     # Container environment
     parser.add_argument('--data_dir', type=str,
-                        default='/opt/ml/input/data/train/images')
+                        default='./data/image/train')
     parser.add_argument('--eval_dir', type=str,
-                        default='/opt/ml/input/data/eval/images')
+                        default='./data/image/eval')
     parser.add_argument('--model_dir', type=str, default='./model')
     parser.add_argument('--train_data_dir', type=str, default='./data')
 

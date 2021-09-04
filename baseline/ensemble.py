@@ -64,3 +64,5 @@ if __name__ == "__main__":
     result = get_submission_df(sum_and_get_argmax(df_list), image_id)
     result.to_csv(os.path.join(
         output_dir, "ensemble/ensemble.csv"), index=False)
+
+    print('Ensemble Done!')
