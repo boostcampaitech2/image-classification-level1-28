@@ -8,7 +8,8 @@ To learn more detail about the competition, please, refer to [**the AI Stage pos
 
 ## **Archive contents**
 
-`minibatch28/
+```
+minibatch28/
 ├── data/
 |   ├── image/
 |   |   ├── train/ 
@@ -37,7 +38,8 @@ To learn more detail about the competition, please, refer to [**the AI Stage pos
 ├── loss.py
 ├── inference.py
 ├── train.py
-└── train.sh`
+└── train.sh
+```
 
 - `data/` : contains raw data dir and label data (should contain 'train.csv', 'info.csv')
 - `data/image/` : raw image dir of the competition
@@ -69,13 +71,13 @@ You can automatically generate `data/train_list.csv`, `data/valid_list.csv` fi
 
 To train model, run following command.
 
-`$ python train.py \`
+```
+$ python train.py --model {model_number} --dataset {model_number} --batch_size {batch_size} --epochs {epochs} \
 
-    `--model {model_number} --dataset {model_number} --batch_size {batch_size} --epochs {epochs} \`
+    --lr_decay_step {lr_decay_step} --gamma {gamma} --lr {learning_rate} --scheduler 1 \
 
-    `--lr_decay_step {lr_decay_step} --gamma {gamma} --lr {learning_rate} --scheduler 1 \` 
-
-    `--cutmix 0 --criterion {model_number} --optimizer {optimizer}`
+    --cutmix 0 --criterion {model_number} --optimizer {optimizer}
+```
 
 To train 5 models at once, run following shell script file.
 
@@ -85,20 +87,22 @@ To train 5 models at once, run following shell script file.
 
 If trained weights are prepared, you can create files that contains class of images.
 
-`$ python inference.py --model {model_number} --batch_size {batch_size}` 
+```$ python inference.py --model {model_number} --batch_size {batch_size}```
 
 ## Ensemble
 
-If you want to do an ensemble, add `--ensemble` argument like following code.
+To inference and ensemble 5 models at once, run following shell script file.
 
-`$ python inference.py --model {model_number} --batch_size {batch_size} --ensemble 1`
-
-It will make csv files for ensemble in dir `./output/` 
-
-,and by following command to create ensembled result `$ python ensemble.py`
+`$ ./ensemble.sh`
 
 Then `ensemble.csv` will be created in `output/ensemble` directory.
 
-### Member of Minibatch 28
+### Members of Minibatch 28
 
--
+- 강재현_T2003
+- 권예환_T2012
+- 김준태_T2058
+- 박마루찬_T2078
+- 서광채_T2106
+- 장동건_T2185
+- 홍요한_T2244
