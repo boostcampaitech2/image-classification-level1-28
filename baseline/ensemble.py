@@ -41,11 +41,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # ensemble.py --data_dir "ouput csv파일들이 들어있는 폴더 경로"
-    parser.add_argument('--data_dir', type=str, default="/outputs")
-
+    parser.add_argument('--output_dir', type=str, default="./output")
     args = parser.parse_args()
-    data_dirs = args.data_dir
-    data_list = load_data_list(data_dirs)
+
+    output_dir = args.output_dir
+
+    os.makedirs(output_dir, exist_ok=True)
+    data_list = load_data_list(output_dir)
 
     # csv file을 읽어와 dataframe으로 반환합니다.
     df_list = [pd.read_csv(file_name) for file_name in data_list]
@@ -56,5 +58,9 @@ if __name__ == "__main__":
     # ImageID column을 제거한 DataFrame을 반환합니다.
     df_list = [df.drop(columns=["ImageID"]) for df in df_list]
 
+    # 첫번째 모델에 가중치 0.9
+    df_list[0] *= 0.9
+
     result = get_submission_df(sum_and_get_argmax(df_list), image_id)
-    result.to_csv("submission.csv", index=False)
+    result.to_csv(os.path.join(
+        output_dir, "ensemble/ensemble.csv"), index=False)

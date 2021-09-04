@@ -1,6 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import pandas as pd
+import numpy as np
+
+
+def get_class_weight():
+    df = pd.read_csv('./data/train_list.csv')
+    classes = df['label'].value_counts().sort_index().values
+    class_weight = torch.tensor(np.max(classes) / classes)
+    return class_weight
 
 
 # https://discuss.pytorch.org/t/is-this-a-correct-implementation-for-focal-loss-in-pytorch/43327/8
@@ -42,10 +51,11 @@ class LabelSmoothingLoss(nn.Module):
 
 # https://gist.github.com/SuperShinyEyes/dcc68a08ff8b615442e3bc6a9b55a354
 class F1Loss(nn.Module):
-    def __init__(self, classes=3, epsilon=1e-7):
+    def __init__(self, classes=18, epsilon=1e-7):
         super().__init__()
         self.classes = classes
         self.epsilon = epsilon
+
     def forward(self, y_pred, y_true):
         assert y_pred.ndim == 2
         assert y_true.ndim == 1
@@ -83,19 +93,25 @@ class FocalLoss_gamma4(nn.Module):
             reduction=self.reduction
         )
 
-_criterion_entrypoints = {
-    'cross_entropy': nn.CrossEntropyLoss,
-    'focal': FocalLoss,
-    'label_smoothing': LabelSmoothingLoss,
-    'f1': F1Loss,
-    'Focal_g4' : FocalLoss_gamma4
-}
+
+def WeightedCrossEntropyLoss():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    weight = get_class_weight().to(device, dtype=torch.float)
+    print(weight)
+    return nn.CrossEntropyLoss(weight=weight)
+
 
 _criterion_entrypoints = {
     'cross_entropy': nn.CrossEntropyLoss,
     'focal': FocalLoss,
     'label_smoothing': LabelSmoothingLoss,
-    'f1': F1Loss
+    'f1': F1Loss,
+    'Focal_g4': FocalLoss_gamma4,
+    'model1': FocalLoss,
+    'model2': WeightedCrossEntropyLoss,
+    'model3': F1Loss,
+    'model4': nn.CrossEntropyLoss,
+    'model5': nn.CrossEntropyLoss
 }
 
 
